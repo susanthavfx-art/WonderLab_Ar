@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WonderLab AR Camera — Live Marker Scanner</title>
+  <link rel="icon" href="wonderlab-logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Import Map for Three.js + MindAR v1.2.5 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.151.3/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.151.3/examples/jsm/",
+      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #050509;
+      --cyan: #18d9ff;
+      --royal: #347dff;
+      --pink: #ef2c8f;
+      --orange: #ff8a00;
+      --emerald: #2ee59d;
+      --line: rgba(255, 255, 255, 0.16);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #f7f7fb;
+      font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+    }
+
+    /* MindAR Container — MUST isolate stacking context so video (z-index: -2) stays visible! */
+    #ar-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    /* Top HUD Bar */
+    .ar-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      padding: max(12px, env(safe-area-inset-top)) 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(5, 5, 10, 0.86) 0%, rgba(5, 5, 10, 0) 100%);
+      pointer-events: none;
+    }
+
+    .ar-topbar > * {
+      pointer-events: auto;
+    }
+
+    .ar-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 12px 6px 7px;
+      border-radius: 999px;
+      background: rgba(8, 9, 16, 0.78);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .ar-brand img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+
+    .ar-brand span {
+      font: 700 13px "Space Grotesk", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .ar-brand em {
+      font-style: normal;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(24, 217, 255, 0.2);
+      color: var(--cyan);
+      margin-left: 3px;
+    }
+
+    .ar-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(8, 9, 16, 0.82);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      font: 700 11px "Space Grotesk", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #d6d7e6;
+    }
+
+    .ar-status-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulse 1.6s infinite;
+    }
+
+    .ar-status-pill.locked {
+      border-color: rgba(46, 229, 157, 0.55);
+      color: var(--emerald);
+    }
+
+    .ar-status-pill.locked .dot {
+      background: var(--emerald);
+      box-shadow: 0 0 12px var(--emerald);
+    }
+
+    .ar-top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: rgba(8, 9, 16, 0.82);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      font-size: 15px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    /* Center Scanning Reticle Guide (Hidden when marker locked) */
+    .scan-guide {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      padding: 20px;
+    }
+
+    .scan-guide.hidden {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+
+    .reticle-box {
+      width: min(68vw, 270px);
+      height: min(68vw, 270px);
+      position: relative;
+      border-radius: 24px;
+      border: 1px dashed rgba(24, 217, 255, 0.38);
+      box-shadow: inset 0 0 40px rgba(24, 217, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: var(--cyan);
+      border-style: solid;
+    }
+    .corner.tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-top-left-radius: 14px; }
+    .corner.tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-top-right-radius: 14px; }
+    .corner.bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-bottom-left-radius: 14px; }
+    .corner.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-bottom-right-radius: 14px; }
+
+    .laser-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), #fff, var(--pink), transparent);
+      box-shadow: 0 0 16px 3px rgba(24, 217, 255, 0.65);
+      animation: sweep 2.8s ease-in-out infinite;
+    }
+
+    @keyframes sweep {
+      0%, 100% { top: 8%; }
+      50% { top: 90%; }
+    }
+
+    .target-hint-card {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(7, 8, 15, 0.85);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      max-width: 340px;
+      pointer-events: auto;
+    }
+
+    .target-hint-card img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      flex-shrink: 0;
+    }
+
+    .target-hint-card strong {
+      display: block;
+      font: 600 13px "Space Grotesk", sans-serif;
+      color: #fff;
+    }
+
+    .target-hint-card span {
+      display: block;
+      font-size: 11.5px;
+      color: #b4b5c6;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    /* Bottom Dock — Scene Switcher + Active AR Experience Controls */
+    .ar-bottom-dock {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .active-scene-panel {
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(8, 10, 18, 0.88);
+      border: 1px solid rgba(24, 217, 255, 0.42);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+      display: none;
+      animation: slideUp 0.28s ease;
+    }
+
+    .active-scene-panel.visible {
+      display: block;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scene-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .scene-panel-head small {
+      font: 700 10px "Space Grotesk", sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .scene-panel-head h3 {
+      margin: 0;
+      font: 700 17px "Space Grotesk", sans-serif;
+    }
+
+    .active-scene-panel p {
+      margin: 0 0 12px;
+      font-size: 12.5px;
+      color: #c2c3d4;
+      line-height: 1.45;
+    }
+
+    .ar-action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ar-btn {
+      flex: 1;
+      min-width: 115px;
+      padding: 10px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font: 600 12px "DM Sans", sans-serif;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .ar-btn.primary {
+      background: linear-gradient(100deg, var(--cyan), var(--royal) 50%, var(--pink));
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    .ar-btn.whatsapp {
+      background: linear-gradient(95deg, #16c16a, #0d9954);
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    /* Quick Marker Tabs & Free-Space Preview Bar */
+    .quick-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(8, 9, 16, 0.84);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      overflow-x: auto;
+    }
+
+    .scene-pill {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #b4b5c6;
+      font: 600 11px "Space Grotesk", sans-serif;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .scene-pill.active {
+      background: rgba(24, 217, 255, 0.18);
+      border-color: rgba(24, 217, 255, 0.5);
+      color: #fff;
+    }
+
+    .demo-mode-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 138, 0, 0.45);
+      background: rgba(255, 138, 0, 0.15);
+      color: #ffb35c;
+      font: 700 11px "Space Grotesk", sans-serif;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .demo-mode-btn.active {
+      background: var(--orange);
+      color: #050509;
+    }
+
+    /* Loading / Permission Overlay */
+    .loader-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: radial-gradient(circle at 50% 35%, rgba(24, 217, 255, 0.16), #050509 65%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 28px;
+      transition: opacity 0.35s ease;
+    }
+
+    .loader-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-logo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      margin-bottom: 18px;
+      border: 1px solid rgba(24, 217, 255, 0.4);
+      box-shadow: 0 0 40px rgba(24, 217, 255, 0.25);
+    }
+
+    .loader-screen h1 {
+      margin: 0 0 8px;
+      font: 700 26px "Space Grotesk", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .loader-screen p {
+      margin: 0 0 22px;
+      max-width: 340px;
+      font-size: 14px;
+      color: #a9aab9;
+      line-height: 1.55;
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.12);
+      border-top-color: var(--cyan);
+      border-right-color: var(--pink);
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 14px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .start-cam-btn {
+      padding: 14px 28px;
+      border-radius: 999px;
+      border: 0;
+      background: linear-gradient(100deg, var(--cyan), var(--royal) 48%, var(--pink));
+      color: #fff;
+      font: 700 15px "Space Grotesk", sans-serif;
+      cursor: pointer;
+      box-shadow: 0 12px 35px rgba(24, 217, 255, 0.3);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Live MindAR WebGL + Camera Feed Container -->
+  <div id="ar-container"></div>
+
+  <!-- Loading & Camera Permission Screen -->
+  <div class="loader-screen" id="loaderScreen">
+    <img class="loader-logo" src="wonderlab-logo.png" alt="WonderLab AR">
+    <div class="spinner" id="loaderSpinner"></div>
+    <h1 id="loaderTitle">Starting WonderLab WebAR…</h1>
+    <p id="loaderText">Allow camera access when prompted, then point your camera at the Image Marker on screen.</p>
+    <button class="start-cam-btn" id="manualStartBtn" type="button">Tap to Launch AR Camera ◎</button>
+  </div>
+
+  <!-- Top HUD -->
+  <header class="ar-topbar">
+    <a class="ar-brand" href="index.html#live-demo">
+      <img src="wonderlab-logo.png" alt="WonderLab">
+      <span>WonderLab <em>AR</em></span>
+    </a>
+
+    <div class="ar-status-pill" id="arStatusPill">
+      <span class="dot"></span>
+      <span id="arStatusText">SCANNING MARKER</span>
+    </div>
+
+    <div class="ar-top-actions">
+      <button class="icon-btn" id="btnSoundToggle" type="button" aria-label="Toggle AR Sound">🔊</button>
+      <a class="icon-btn" href="index.html#live-demo" aria-label="Close AR Camera">✕</a>
+    </div>
+  </header>
+
+  <!-- Center Scanning Reticle & Target Marker Hint -->
+  <div class="scan-guide" id="scanGuide">
+    <div class="reticle-box">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+      <div class="laser-line"></div>
+    </div>
+
+    <div class="target-hint-card">
+      <img id="hintMarkerImg" src="assets/markers/marker-heart.jpg" alt="Target Marker">
+      <div>
+        <strong id="hintTitle">Point at: Human Heart Marker</strong>
+        <span id="hintSub">Aim your camera steadily at the marker image displayed on the screen.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Interactive Controls & Scene Bar -->
+  <div class="ar-bottom-dock">
+    <div class="active-scene-panel" id="activeScenePanel">
+      <div class="scene-panel-head">
+        <div>
+          <small id="panelCat">TUITION • MARKER 01</small>
+          <h3 id="panelTitle">Human Heart — Cardiac Cycle</h3>
+        </div>
+        <span style="font-size:11px; color:var(--emerald); font-weight:700;">● LIVE 3D</span>
+      </div>
+      <p id="panelDesc">3D beating chambers + blood circulation pathways locked to printed biology diagram.</p>
+      <div class="ar-action-row" id="panelActions"></div>
+    </div>
+
+    <div class="quick-bar" aria-label="Switch Marker Guide">
+      <button class="scene-pill active" type="button" data-idx="0" data-key="heart">🫀 Tuition</button>
+      <button class="scene-pill" type="button" data-idx="1" data-key="showroom">👟 Media Ad</button>
+      <button class="scene-pill" type="button" data-idx="2" data-key="science">🪐 Flash Card</button>
+      <button class="scene-pill" type="button" data-idx="3" data-key="packaging">🍵 Packaging</button>
+      <button class="scene-pill" type="button" data-idx="4" data-key="bcard">💼 AR Card</button>
+      <button class="demo-mode-btn" id="btnFreePreview" type="button" title="Preview 3D over camera even without a marker">3D Preview</button>
+    </div>
+  </div>
+
+  <!-- Main WebAR 3D Application -->
+  <script type="module">
+    import * as THREE from "three";
+    import { MindARThree } from "mindar-image-three";
+
+    /* ----------------------------------------------------------------------
+       SCENE METADATA FOR ALL 5 WONDERLAB WEBAR SAMPLES
+       ---------------------------------------------------------------------- */
+    const SCENE_META = [
+      {
+        key: "heart",
+        idx: 0,
+        cat: "TUITION & EXAM PREP • MARKER 01",
+        title: "Human Heart — A/L Biology",
+        hint: "Point at: Human Heart Marker",
+        markerImg: "assets/markers/marker-heart.jpg",
+        desc: "Live 72 BPM beating 3D heart + oxygenated/deoxygenated blood flow & syllabus narration.",
+        speech: "Welcome to WonderLab A R Biology. Observe how deoxygenated blood enters the right atrium in blue, travels to the lungs, and returns to the left ventricle to pump oxygen-rich red blood through the aorta."
+      },
+      {
+        key: "showroom",
+        idx: 1,
+        cat: "MEDIA & PRINT ADS • MARKER 02",
+        title: "Aero-X 360° Virtual Showroom",
+        hint: "Point at: Aero-X Sneaker Marker",
+        markerImg: "assets/markers/marker-showroom.jpg",
+        desc: "Interactive 3D futuristic running sneaker launched directly from a print advertisement.",
+        speech: "Experience the Aero X Three Sixty in Augmented Reality. Featuring responsive Energy Foam cushioning and ultra-light engineered mesh. Tap below to switch colorways or order online."
+      },
+      {
+        key: "science",
+        idx: 2,
+        cat: "PUBLISHING & FLASH CARDS • MARKER 03",
+        title: "Living 3D Solar System",
+        hint: "Point at: Solar System Marker",
+        markerImg: "assets/markers/marker-science.jpg",
+        desc: "Real-time orbiting 3D planets, Saturn's rings & illuminated Sun rising off the flash card.",
+        speech: "Explore our Solar System in real three D. Eight planets orbit the glowing Sun, from rocky Mercury and Earth to gas giants Jupiter and ringed Saturn."
+      },
+      {
+        key: "packaging",
+        idx: 3,
+        cat: "SMART PACKAGING • MARKER 04",
+        title: "Ceylon Highland Tea Origin",
+        hint: "Point at: Ceylon Tea Marker",
+        markerImg: "assets/markers/marker-packaging.jpg",
+        desc: "Luxury 3D tea caddy, misty Nuwara Eliya estate contours & swirling botanical leaves.",
+        speech: "Handpicked from the misty highlands of Sri Lanka. Your single-estate Pure Ceylon F B O P tea is verified authentic."
+      },
+      {
+        key: "bcard",
+        idx: 4,
+        cat: "CORPORATE • MARKER 05",
+        title: "WonderLab Studio AR Card",
+        hint: "Point at: WonderLab Business Card",
+        markerImg: "assets/markers/marker-bcard.jpg",
+        desc: "Executive 3D studio hologram with AI, 3D, VFX showcase & one-tap WhatsApp connect.",
+        speech: "Hello from WonderLab Studio Sri Lanka. We turn printed pages, products, and campaigns into unforgettable AI, three D, V F X, and Web A R experiences."
+      }
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+    const initialKey = params.get("scene") || "heart";
+    let selectedIdx = Math.max(0, SCENE_META.findIndex((s) => s.key === initialKey));
+
+    /* ----------------------------------------------------------------------
+       AUDIO & VOICEOVER ENGINE (Web Audio + SpeechSynthesis)
+       ---------------------------------------------------------------------- */
+    let soundEnabled = true;
+    let audioCtx = null;
+    let heartbeatInterval = null;
+
+    function ensureAudio() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass && !audioCtx) {
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function playLockChime() {
+      if (!soundEnabled) return;
+      try {
+        ensureAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        [523.25, 659.25, 1046.5].forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now + i * 0.07);
+          gain.gain.setValueAtTime(0.001, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.09, now + i * 0.07 + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.07 + 0.34);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.36);
+        });
+      } catch (_) {}
+    }
+
+    function playHeartbeatThump() {
+      if (!soundEnabled) return;
+      try {
+        ensureAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        [0, 0.22].forEach((offset, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(idx === 0 ? 78 : 64, now + offset);
+          osc.frequency.exponentialRampToValueAtTime(32, now + offset + 0.14);
+          gain.gain.setValueAtTime(0.001, now + offset);
+          gain.gain.exponentialRampToValueAtTime(idx === 0 ? 0.16 : 0.11, now + offset + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.16);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + offset);
+          osc.stop(now + offset + 0.18);
+        });
+      } catch (_) {}
+    }
+
+    function speakNarration(text) {
+      if (!soundEnabled || !("speechSynthesis" in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.98;
+        utter.pitch = 1.02;
+        window.speechSynthesis.speak(utter);
+      } catch (_) {}
+    }
+
+    function stopAllAudio() {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+      if ("speechSynthesis" in window) {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    }
+
+    document.getElementById("btnSoundToggle").addEventListener("click", (e) => {
+      soundEnabled = !soundEnabled;
+      e.currentTarget.textContent = soundEnabled ? "🔊" : "🔇";
+      if (!soundEnabled) stopAllAudio();
+      else ensureAudio();
+    });
+
+    /* ----------------------------------------------------------------------
+       HELPER: CRISP 3D HOLOGRAPHIC LABEL CARD (CanvasTexture)
+       ---------------------------------------------------------------------- */
+    function makeHoloLabel(title, subtitle, accent = "#18d9ff", width = 0.72, height = 0.19) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 768;
+      canvas.height = 200;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "rgba(6, 9, 20, 0.86)";
+      ctx.beginPath();
+      ctx.roundRect(8, 8, 752, 184, 34);
+      ctx.fill();
+
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = accent;
+      ctx.stroke();
+
+      ctx.fillStyle = accent;
+      ctx.font = "bold 28px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(title, 384, 82);
+
+      ctx.fillStyle = "#eef0ff";
+      ctx.font = "500 23px sans-serif";
+      ctx.fillText(subtitle, 384, 134);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+      return new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
+    }
+
+    function makeBasePlatform(primaryHex = 0x18d9ff, secondaryHex = 0xef2c8f) {
+      const base = new THREE.Group();
+
+      const outerRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.42, 0.45, 64),
+        new THREE.MeshBasicMaterial({ color: primaryHex, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      base.add(outerRing);
+
+      const innerRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.29, 0.305, 48),
+        new THREE.MeshBasicMaterial({ color: secondaryHex, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+      );
+      base.add(innerRing);
+
+      const glowDisc = new THREE.Mesh(
+        new THREE.CircleGeometry(0.42, 48),
+        new THREE.MeshBasicMaterial({ color: primaryHex, transparent: true, opacity: 0.10, side: THREE.DoubleSide })
+      );
+      glowDisc.position.z = -0.002;
+      base.add(glowDisc);
+
+      return { base, outerRing, innerRing };
+    }
+
+    /* ----------------------------------------------------------------------
+       3D BUILDERS FOR ALL 5 WONDERLAB AR EXPERIENCES
+       ---------------------------------------------------------------------- */
+
+    // 0. TUITION: 3D BEATING HUMAN HEART + BLOOD PATHWAYS
+    let heartXray = false;
+    function buildHeartScene() {
+      const root = new THREE.Group();
+      const { base, outerRing, innerRing } = makeBasePlatform(0x18d9ff, 0xff2a55);
+      base.position.z = 0.01;
+      root.add(base);
+
+      const heartGroup = new THREE.Group();
+      heartGroup.position.set(0, -0.02, 0.25);
+
+      const muscleMat = new THREE.MeshStandardMaterial({
+        color: 0xd91e48,
+        roughness: 0.28,
+        metalness: 0.12,
+        emissive: 0x3a0412
+      });
+      const veinMat = new THREE.MeshStandardMaterial({
+        color: 0x1499ff,
+        roughness: 0.3,
+        metalness: 0.18,
+        emissive: 0x05284f
+      });
+      const arteryMat = new THREE.MeshStandardMaterial({
+        color: 0xff3b5c,
+        roughness: 0.28,
+        metalness: 0.15,
+        emissive: 0x450816
+      });
+
+      // Left & Right Ventricles (sculpted tapered chambers)
+      const leftVent = new THREE.Mesh(new THREE.SphereGeometry(0.145, 32, 32), muscleMat);
+      leftVent.scale.set(0.88, 1.32, 0.85);
+      leftVent.position.set(0.055, -0.03, 0);
+      leftVent.rotation.z = 0.24;
+      heartGroup.add(leftVent);
+
+      const rightVent = new THREE.Mesh(new THREE.SphereGeometry(0.13, 32, 32), veinMat);
+      rightVent.scale.set(0.85, 1.22, 0.82);
+      rightVent.position.set(-0.065, -0.02, 0.02);
+      rightVent.rotation.z = -0.18;
+      heartGroup.add(rightVent);
+
+      // Left & Right Atria
+      const leftAtrium = new THREE.Mesh(new THREE.SphereGeometry(0.088, 24, 24), arteryMat);
+      leftAtrium.position.set(0.085, 0.11, -0.01);
+      heartGroup.add(leftAtrium);
+
+      const rightAtrium = new THREE.Mesh(new THREE.SphereGeometry(0.092, 24, 24), veinMat);
+      rightAtrium.position.set(-0.095, 0.10, 0.01);
+      heartGroup.add(rightAtrium);
+
+      // Aortic Arch (curved crimson tube)
+      const aortaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.02, 0.08, 0.01),
+        new THREE.Vector3(0.03, 0.22, 0.02),
+        new THREE.Vector3(-0.03, 0.27, 0.0),
+        new THREE.Vector3(-0.07, 0.20, -0.04)
+      ]);
+      const aorta = new THREE.Mesh(new THREE.TubeGeometry(aortaCurve, 28, 0.034, 16, false), arteryMat);
+      heartGroup.add(aorta);
+
+      // Superior Vena Cava & Pulmonary Artery
+      const venaCava = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.032, 0.19, 16), veinMat);
+      venaCava.position.set(-0.11, 0.19, 0.0);
+      heartGroup.add(venaCava);
+
+      const pulmCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.04, 0.06, 0.04),
+        new THREE.Vector3(-0.01, 0.17, 0.05),
+        new THREE.Vector3(0.11, 0.19, 0.02)
+      ]);
+      const pulm = new THREE.Mesh(new THREE.TubeGeometry(pulmCurve, 20, 0.027, 14, false), veinMat);
+      heartGroup.add(pulm);
+
+      root.add(heartGroup);
+
+      // Flowing Blood Cells (O2 Red & CO2 Cyan)
+      const flowCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.24, 0.20, 0.18),
+        new THREE.Vector3(-0.10, 0.05, 0.26),
+        new THREE.Vector3(-0.05, -0.10, 0.28),
+        new THREE.Vector3(0.08, -0.08, 0.28),
+        new THREE.Vector3(0.06, 0.18, 0.26),
+        new THREE.Vector3(0.24, 0.24, 0.20)
+      ], true);
+
+      const cells = [];
+      for (let i = 0; i < 18; i++) {
+        const isOxy = i >= 9;
+        const cell = new THREE.Mesh(
+          new THREE.SphereGeometry(0.014, 12, 12),
+          new THREE.MeshBasicMaterial({ color: isOxy ? 0xff4769 : 0x18d9ff })
+        );
+        root.add(cell);
+        cells.push({ mesh: cell, offset: i / 18 });
+      }
+
+      // Floating Hologram Lesson Card
+      const banner = makeHoloLabel("CARDIAC CYCLE • 72 BPM", "Blue: Deoxygenated  |  Red: Oxygenated", "#18d9ff", 0.76, 0.19);
+      banner.position.set(0, 0.36, 0.34);
+      banner.rotation.x = 0.35;
+      root.add(banner);
+
+      return {
+        root,
+        setXray(flag) {
+          heartXray = flag;
+          [muscleMat, veinMat, arteryMat].forEach((m) => {
+            m.wireframe = flag;
+          });
+        },
+        update(t) {
+          // Realistic 72 BPM double-pulse lub-dub curve
+          const phase = (t * 1.2) % 1;
+          const lub = Math.exp(-Math.pow((phase - 0.12) / 0.055, 2)) * 0.14;
+          const dub = Math.exp(-Math.pow((phase - 0.28) / 0.065, 2)) * 0.09;
+          const s = 1 + lub + dub;
+          heartGroup.scale.set(s, s, s);
+          heartGroup.rotation.y = Math.sin(t * 0.7) * 0.38;
+
+          outerRing.rotation.z = t * 0.5;
+          innerRing.scale.setScalar(1 + (lub + dub) * 0.8);
+
+          cells.forEach((c) => {
+            const u = (c.offset + t * 0.22) % 1;
+            c.mesh.position.copy(flowCurve.getPointAt(u));
+          });
+        }
+      };
+    }
+
+    // 1. MEDIA ADS: AERO-X 360° SNEAKER VIRTUAL SHOWROOM
+    function buildSneakerScene() {
+      const root = new THREE.Group();
+      const { base, outerRing, innerRing } = makeBasePlatform(0x18d9ff, 0xff8a00);
+      base.position.z = 0.01;
+      root.add(base);
+
+      const shoe = new THREE.Group();
+      shoe.position.set(0, 0, 0.24);
+      shoe.rotation.x = 0.32;
+
+      const soleMat = new THREE.MeshStandardMaterial({ color: 0xff6a00, roughness: 0.32, metalness: 0.25, emissive: 0x331200 });
+      const upperMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.45, metalness: 0.2 });
+      const accentMat = new THREE.MeshStandardMaterial({ color: 0x18d9ff, roughness: 0.22, metalness: 0.55, emissive: 0x063848 });
+
+      // Sculpted Outsole & Midsole
+      const midsole = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.065, 0.17), soleMat);
+      midsole.position.set(0, -0.05, 0);
+      shoe.add(midsole);
+
+      const toeCap = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.062, 24), soleMat);
+      toeCap.position.set(0.21, -0.048, 0);
+      shoe.add(toeCap);
+
+      const heelPod = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.09, 0.07, 24), accentMat);
+      heelPod.position.set(-0.20, -0.045, 0);
+      shoe.add(heelPod);
+
+      // Upper Body & Collar
+      const mainUpper = new THREE.Mesh(new THREE.SphereGeometry(0.16, 28, 24), upperMat);
+      mainUpper.scale.set(1.55, 0.72, 0.54);
+      mainUpper.position.set(0.02, 0.025, 0);
+      shoe.add(mainUpper);
+
+      const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.095, 0.11, 24), upperMat);
+      collar.position.set(-0.13, 0.075, 0);
+      collar.rotation.z = 0.22;
+      shoe.add(collar);
+
+      // Glowing Neon X Stripes on Both Sides
+      [-0.09, 0.09].forEach((zPos) => {
+        const s1 = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.022, 0.012), accentMat);
+        s1.position.set(0.01, 0.03, zPos);
+        s1.rotation.z = 0.42;
+        shoe.add(s1);
+
+        const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.022, 0.012), soleMat);
+        s2.position.set(0.01, 0.03, zPos);
+        s2.rotation.z = -0.42;
+        shoe.add(s2);
+      });
+
+      // Laces
+      for (let i = 0; i < 4; i++) {
+        const lace = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.012, 0.11), accentMat);
+        lace.position.set(0.02 + i * 0.042, 0.09 - i * 0.012, 0);
+        shoe.add(lace);
+      }
+
+      root.add(shoe);
+
+      const specCard = makeHoloLabel("AERO-X 360 • SHOWROOM", "275g Carbon Mesh  •  Energy Foam+", "#ff8a00", 0.76, 0.18);
+      specCard.position.set(0, 0.34, 0.36);
+      specCard.rotation.x = 0.35;
+      root.add(specCard);
+
+      const palettes = [
+        { accent: 0x18d9ff, sole: 0xff6a00 },
+        { accent: 0xef2c8f, sole: 0x18d9ff },
+        { accent: 0xffc400, sole: 0x2ee59d }
+      ];
+      let palIdx = 0;
+      let spinBoost = 1;
+
+      return {
+        root,
+        cycleColor() {
+          palIdx = (palIdx + 1) % palettes.length;
+          accentMat.color.setHex(palettes[palIdx].accent);
+          soleMat.color.setHex(palettes[palIdx].sole);
+        },
+        boostSpin() {
+          spinBoost = 4.5;
+        },
+        update(t, dt) {
+          spinBoost = Math.max(1, spinBoost - dt * 2.5);
+          shoe.rotation.y += dt * 0.95 * spinBoost;
+          shoe.position.z = 0.24 + Math.sin(t * 2.2) * 0.025;
+          outerRing.rotation.z = -t * 0.6;
+          innerRing.rotation.z = t * 0.9;
+        }
+      };
+    }
+
+    // 2. PUBLISHING: LIVING 3D SOLAR SYSTEM FLASH CARD
+    function buildSolarScene() {
+      const root = new THREE.Group();
+      const system = new THREE.Group();
+      system.position.set(0, 0, 0.20);
+      system.rotation.x = 0.45;
+      root.add(system);
+
+      // Glowing Sun + PointLight
+      const sun = new THREE.Mesh(
+        new THREE.SphereGeometry(0.095, 32, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffb300 })
+      );
+      system.add(sun);
+
+      const corona = new THREE.Mesh(
+        new THREE.SphereGeometry(0.118, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xff6a00, transparent: true, opacity: 0.32 })
+      );
+      system.add(corona);
+
+      const sunLight = new THREE.PointLight(0xfff1cc, 2.2, 3);
+      system.add(sunLight);
+
+      const planetConfigs = [
+        { r: 0.15, size: 0.016, speed: 2.3, color: 0xb5b5b5 }, // Mercury
+        { r: 0.20, size: 0.022, speed: 1.7, color: 0xe6b86a }, // Venus
+        { r: 0.26, size: 0.026, speed: 1.3, color: 0x1e90ff, moon: true }, // Earth
+        { r: 0.32, size: 0.020, speed: 1.0, color: 0xe0533c }, // Mars
+        { r: 0.40, size: 0.044, speed: 0.65, color: 0xd99b66 }, // Jupiter
+        { r: 0.49, size: 0.036, speed: 0.45, color: 0xe8c987, rings: true } // Saturn
+      ];
+
+      const orbiters = planetConfigs.map((cfg, idx) => {
+        const track = new THREE.Mesh(
+          new THREE.RingGeometry(cfg.r - 0.002, cfg.r + 0.002, 64),
+          new THREE.MeshBasicMaterial({ color: 0x18d9ff, transparent: true, opacity: 0.32, side: THREE.DoubleSide })
+        );
+        system.add(track);
+
+        const pivot = new THREE.Group();
+        pivot.rotation.z = idx * 1.1;
+        system.add(pivot);
+
+        const planet = new THREE.Mesh(
+          new THREE.SphereGeometry(cfg.size, 24, 24),
+          new THREE.MeshStandardMaterial({ color: cfg.color, roughness: 0.55 })
+        );
+        planet.position.x = cfg.r;
+        pivot.add(planet);
+
+        if (cfg.rings) {
+          const saturnRing = new THREE.Mesh(
+            new THREE.RingGeometry(cfg.size * 1.4, cfg.size * 2.2, 36),
+            new THREE.MeshBasicMaterial({ color: 0xdcc08e, side: THREE.DoubleSide, transparent: true, opacity: 0.8 })
+          );
+          saturnRing.rotation.x = 0.4;
+          planet.add(saturnRing);
+        }
+
+        let moonPivot = null;
+        if (cfg.moon) {
+          moonPivot = new THREE.Group();
+          const moon = new THREE.Mesh(
+            new THREE.SphereGeometry(0.008, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0xeef2ff })
+          );
+          moon.position.x = 0.042;
+          moonPivot.add(moon);
+          planet.add(moonPivot);
+        }
+
+        return { pivot, speed: cfg.speed, moonPivot };
+      });
+
+      const label = makeHoloLabel("THE SOLAR SYSTEM • 3D", "Interactive AR Textbook & Flash Card", "#18d9ff", 0.74, 0.18);
+      label.position.set(0, 0.36, 0.38);
+      label.rotation.x = 0.32;
+      root.add(label);
+
+      let speedMult = 1;
+      return {
+        root,
+        toggleSpeed() {
+          speedMult = speedMult === 1 ? 2.6 : 1;
+          return speedMult > 1;
+        },
+        update(t, dt) {
+          corona.scale.setScalar(1 + Math.sin(t * 3.5) * 0.06);
+          orbiters.forEach((o) => {
+            o.pivot.rotation.z += dt * o.speed * speedMult;
+            if (o.moonPivot) o.moonPivot.rotation.z += dt * 3.5 * speedMult;
+          });
+        }
+      };
+    }
+
+    // 3. PACKAGING: CEYLON HIGHLAND TEA SMART CADDY & BOTANICAL VORTEX
+    function buildPackagingScene() {
+      const root = new THREE.Group();
+      const { base, outerRing } = makeBasePlatform(0x2ee59d, 0xffb830);
+      base.position.z = 0.01;
+      root.add(base);
+
+      const caddy = new THREE.Group();
+      caddy.position.set(0, 0, 0.22);
+      caddy.rotation.x = Math.PI / 2;
+
+      const blackGoldMat = new THREE.MeshStandardMaterial({ color: 0x10131a, roughness: 0.28, metalness: 0.45 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xe5b84b, roughness: 0.22, metalness: 0.85 });
+
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.28, 36), blackGoldMat);
+      caddy.add(body);
+
+      const topRim = new THREE.Mesh(new THREE.CylinderGeometry(0.136, 0.136, 0.032, 36), goldMat);
+      topRim.position.y = 0.135;
+      caddy.add(topRim);
+
+      const botRim = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.135, 0.022, 36), goldMat);
+      botRim.position.y = -0.135;
+      caddy.add(botRim);
+
+      root.add(caddy);
+
+      // Swirling 3D Emerald Tea Leaves
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x2ee59d, roughness: 0.35, side: THREE.DoubleSide });
+      const leaves = [];
+      for (let i = 0; i < 16; i++) {
+        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), leafMat);
+        leaf.scale.set(1.6, 0.25, 0.85);
+        root.add(leaf);
+        leaves.push({ mesh: leaf, angle: (i / 16) * Math.PI * 2, h: (i % 5) * 0.065 + 0.08 });
+      }
+
+      const label = makeHoloLabel("PURE CEYLON TEA • VERIFIED", "Single Estate Nuwara Eliya • FBOP 100g", "#2ee59d", 0.78, 0.18);
+      label.position.set(0, 0.34, 0.42);
+      label.rotation.x = 0.35;
+      root.add(label);
+
+      return {
+        root,
+        update(t) {
+          caddy.rotation.y = t * 0.7;
+          outerRing.rotation.z = t * 0.4;
+          leaves.forEach((l, idx) => {
+            const a = l.angle + t * 1.1;
+            const rad = 0.24 + Math.sin(t * 1.5 + idx) * 0.03;
+            l.mesh.position.set(Math.cos(a) * rad, Math.sin(a) * rad, l.h + Math.sin(t * 2 + idx) * 0.03);
+            l.mesh.rotation.set(t + idx, a, 0.5);
+          });
+        }
+      };
+    }
+
+    // 4. CORPORATE: WONDERLAB STUDIO EXECUTIVE AR BUSINESS CARD
+    function buildBusinessCardScene() {
+      const root = new THREE.Group();
+      const { base, outerRing, innerRing } = makeBasePlatform(0x18d9ff, 0xef2c8f);
+      base.position.z = 0.01;
+      root.add(base);
+
+      const emblem = new THREE.Group();
+      emblem.position.set(0, 0.02, 0.25);
+
+      const texLoader = new THREE.TextureLoader();
+      const logoTex = texLoader.load("wonderlab-logo.png");
+
+      const disc = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.18, 0.028, 48),
+        [
+          new THREE.MeshStandardMaterial({ color: 0x18d9ff, metalness: 0.75, roughness: 0.2 }),
+          new THREE.MeshBasicMaterial({ map: logoTex }),
+          new THREE.MeshBasicMaterial({ map: logoTex })
+        ]
+      );
+      disc.rotation.x = Math.PI / 2;
+      emblem.add(disc);
+
+      const halo = new THREE.Mesh(
+        new THREE.TorusGeometry(0.22, 0.008, 16, 64),
+        new THREE.MeshBasicMaterial({ color: 0xef2c8f })
+      );
+      emblem.add(halo);
+
+      root.add(emblem);
+
+      // Rising colorful WonderLab flask bubbles
+      const bubbleColors = [0x18d9ff, 0xef2c8f, 0xff8a00, 0x8c46ff];
+      const bubbles = [];
+      for (let i = 0; i < 12; i++) {
+        const b = new THREE.Mesh(
+          new THREE.SphereGeometry(0.016 + (i % 3) * 0.006, 16, 16),
+          new THREE.MeshBasicMaterial({ color: bubbleColors[i % bubbleColors.length] })
+        );
+        root.add(b);
+        bubbles.push({ mesh: b, phase: i / 12, angle: i * 1.7 });
+      }
+
+      const card = makeHoloLabel("WONDERLAB STUDIO • LK", "AI Ads • 3D Animation • VFX • WebAR", "#ef2c8f", 0.78, 0.19);
+      card.position.set(0, 0.35, 0.42);
+      card.rotation.x = 0.34;
+      root.add(card);
+
+      return {
+        root,
+        update(t) {
+          emblem.rotation.y = Math.sin(t * 0.9) * 0.45;
+          emblem.position.z = 0.25 + Math.sin(t * 2) * 0.02;
+          halo.rotation.x = t * 1.1;
+          halo.rotation.y = t * 0.7;
+          outerRing.rotation.z = t * 0.5;
+          innerRing.rotation.z = -t * 0.8;
+
+          bubbles.forEach((b) => {
+            const p = (b.phase + t * 0.28) % 1;
+            b.mesh.position.set(
+              Math.cos(b.angle + t) * (0.26 - p * 0.08),
+              Math.sin(b.angle + t) * (0.26 - p * 0.08),
+              0.05 + p * 0.38
+            );
+          });
+        }
+      };
+    }
+
+    /* ----------------------------------------------------------------------
+       INITIALIZE MINDAR + THREE.JS ENGINE
+       ---------------------------------------------------------------------- */
+    const container = document.getElementById("ar-container");
+    const loaderScreen = document.getElementById("loaderScreen");
+    const loaderTitle = document.getElementById("loaderTitle");
+    const loaderText = document.getElementById("loaderText");
+    const loaderSpinner = document.getElementById("loaderSpinner");
+    const manualStartBtn = document.getElementById("manualStartBtn");
+
+    const statusPill = document.getElementById("arStatusPill");
+    const statusText = document.getElementById("arStatusText");
+    const scanGuide = document.getElementById("scanGuide");
+    const hintMarkerImg = document.getElementById("hintMarkerImg");
+    const hintTitle = document.getElementById("hintTitle");
+
+    const activeScenePanel = document.getElementById("activeScenePanel");
+    const panelCat = document.getElementById("panelCat");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelDesc = document.getElementById("panelDesc");
+    const panelActions = document.getElementById("panelActions");
+    const scenePills = document.querySelectorAll(".scene-pill");
+    const btnFreePreview = document.getElementById("btnFreePreview");
+
+    function updateGuideUI(idx) {
+      selectedIdx = idx;
+      const meta = SCENE_META[idx];
+      hintMarkerImg.src = meta.markerImg;
+      hintTitle.textContent = meta.hint;
+      scenePills.forEach((p) => p.classList.toggle("active", Number(p.dataset.idx) === idx));
+    }
+
+    updateGuideUI(selectedIdx);
+
+    const mindarThree = new MindARThree({
+      container,
+      imageTargetSrc: "assets/markers/wonderlab-targets.mind",
+      maxTrack: 1,
+      uiLoading: "no",
+      uiScanning: "no",
+      uiError: "no",
+      filterMinCF: 0.0001,
+      filterBeta: 0.001,
+      warmupTolerance: 3,
+      missTolerance: 6
+    });
+
+    const { renderer, scene, camera } = mindarThree;
+
+    // Studio Lighting
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x22263a, 1.35);
+    scene.add(hemi);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    dirLight.position.set(1, 2, 3);
+    scene.add(dirLight);
+
+    // Build all 5 experiences
+    const controllers = [
+      buildHeartScene(),
+      buildSneakerScene(),
+      buildSolarScene(),
+      buildPackagingScene(),
+      buildBusinessCardScene()
+    ];
+
+    // Free-space preview holder attached to camera (if user taps "3D Preview" without a marker)
+    const freeSpaceRig = new THREE.Group();
+    freeSpaceRig.position.set(0, -0.04, -1.25);
+    freeSpaceRig.rotation.x = -0.55;
+    freeSpaceRig.visible = false;
+    camera.add(freeSpaceRig);
+    scene.add(camera);
+
+    let freePreviewActive = false;
+    let activeTrackedIdx = -1;
+
+    function renderActionButtons(idx) {
+      panelActions.innerHTML = "";
+      const meta = SCENE_META[idx];
+
+      const narrateBtn = document.createElement("button");
+      narrateBtn.className = "ar-btn";
+      narrateBtn.textContent = "🔊 Voiceover";
+      narrateBtn.onclick = () => {
+        soundEnabled = true;
+        document.getElementById("btnSoundToggle").textContent = "🔊";
+        speakNarration(meta.speech);
+      };
+      panelActions.appendChild(narrateBtn);
+
+      if (idx === 0) {
+        const xrayBtn = document.createElement("button");
+        xrayBtn.className = "ar-btn primary";
+        xrayBtn.textContent = "🧬 Toggle Mesh X-Ray";
+        xrayBtn.onclick = () => controllers[0].setXray(!heartXray);
+        panelActions.appendChild(xrayBtn);
+      } else if (idx === 1) {
+        const colorBtn = document.createElement("button");
+        colorBtn.className = "ar-btn";
+        colorBtn.textContent = "🎨 Colorway";
+        colorBtn.onclick = () => controllers[1].cycleColor();
+        panelActions.appendChild(colorBtn);
+
+        const spinBtn = document.createElement("button");
+        spinBtn.className = "ar-btn primary";
+        spinBtn.textContent = "🔄 360° Spin";
+        spinBtn.onclick = () => controllers[1].boostSpin();
+        panelActions.appendChild(spinBtn);
+      } else if (idx === 2) {
+        const orbitBtn = document.createElement("button");
+        orbitBtn.className = "ar-btn primary";
+        orbitBtn.textContent = "⚡ 2× Orbit Speed";
+        orbitBtn.onclick = () => {
+          const fast = controllers[2].toggleSpeed();
+          orbitBtn.textContent = fast ? "⚡ Normal Speed" : "⚡ 2× Orbit Speed";
+        };
+        panelActions.appendChild(orbitBtn);
+      } else if (idx === 3) {
+        const cta = document.createElement("a");
+        cta.className = "ar-btn primary";
+        cta.href = "index.html#contact";
+        cta.textContent = "📦 Build Pack AR ↗";
+        panelActions.appendChild(cta);
+      } else if (idx === 4) {
+        const wa = document.createElement("a");
+        wa.className = "ar-btn whatsapp";
+        wa.href = "https://wa.me/94769801157?text=Hi%20WonderLab%20Studio%2C%20I%20just%20scanned%20your%20live%20Executive%20AR%20Business%20Card!";
+        wa.target = "_blank";
+        wa.rel = "noopener";
+        wa.textContent = "💬 WhatsApp Studio ↗";
+        panelActions.appendChild(wa);
+      }
+    }
+
+    function showExperienceHUD(idx, isMarkerLocked) {
+      const meta = SCENE_META[idx];
+      updateGuideUI(idx);
+      scanGuide.classList.add("hidden");
+      statusPill.classList.add("locked");
+      statusText.textContent = isMarkerLocked ? "MARKER LOCKED" : "3D PREVIEW MODE";
+
+      panelCat.textContent = meta.cat;
+      panelTitle.textContent = meta.title;
+      panelDesc.textContent = meta.desc;
+      renderActionButtons(idx);
+      activeScenePanel.classList.add("visible");
+
+      stopAllAudio();
+      playLockChime();
+      if (idx === 0) {
+        playHeartbeatThump();
+        heartbeatInterval = setInterval(playHeartbeatThump, 833);
+      }
+    }
+
+    function hideExperienceHUD() {
+      if (freePreviewActive) return;
+      scanGuide.classList.remove("hidden");
+      statusPill.classList.remove("locked");
+      statusText.textContent = "SCANNING MARKER";
+      activeScenePanel.classList.remove("visible");
+      stopAllAudio();
+    }
+
+    // Attach each 3D scene to its MindAR marker anchor (0..4)
+    const anchors = controllers.map((ctrl, idx) => {
+      const anchor = mindarThree.addAnchor(idx);
+      anchor.group.add(ctrl.root);
+
+      anchor.onTargetFound = () => {
+        if (freePreviewActive) {
+          disableFreePreview();
+        }
+        activeTrackedIdx = idx;
+        showExperienceHUD(idx, true);
+      };
+
+      anchor.onTargetLost = () => {
+        if (activeTrackedIdx === idx) {
+          activeTrackedIdx = -1;
+          hideExperienceHUD();
+        }
+      };
+
+      return anchor;
+    });
+
+    // Free-Space 3D Preview Toggle (when user doesn't have a 2nd screen to scan)
+    function enableFreePreview(idx) {
+      freePreviewActive = true;
+      btnFreePreview.classList.add("active");
+      btnFreePreview.textContent = "✕ Exit Preview";
+
+      // Move selected 3D root into camera-front rig
+      controllers.forEach((c, i) => {
+        if (i === idx) {
+          freeSpaceRig.add(c.root);
+        } else {
+          anchors[i].group.add(c.root);
+        }
+      });
+      freeSpaceRig.visible = true;
+      showExperienceHUD(idx, false);
+    }
+
+    function disableFreePreview() {
+      freePreviewActive = false;
+      btnFreePreview.classList.remove("active");
+      btnFreePreview.textContent = "3D Preview";
+      freeSpaceRig.visible = false;
+      controllers.forEach((c, i) => anchors[i].group.add(c.root));
+      if (activeTrackedIdx === -1) hideExperienceHUD();
+    }
+
+    btnFreePreview.addEventListener("click", () => {
+      ensureAudio();
+      if (freePreviewActive) disableFreePreview();
+      else enableFreePreview(selectedIdx);
+    });
+
+    scenePills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        ensureAudio();
+        const idx = Number(pill.dataset.idx);
+        updateGuideUI(idx);
+        if (freePreviewActive) {
+          enableFreePreview(idx);
+        }
+      });
+    });
+
+    // Touch-drag rotation in Free Preview mode
+    let lastTouchX = null;
+    window.addEventListener("pointerdown", (e) => {
+      ensureAudio();
+      lastTouchX = e.clientX;
+    });
+    window.addEventListener("pointermove", (e) => {
+      if (lastTouchX !== null && freePreviewActive) {
+        const dx = e.clientX - lastTouchX;
+        freeSpaceRig.rotation.z += dx * 0.01;
+        lastTouchX = e.clientX;
+      }
+    });
+    window.addEventListener("pointerup", () => { lastTouchX = null; });
+
+    // Animation Loop
+    const clock = new THREE.Clock();
+    async function bootAR() {
+      try {
+        loaderSpinner.style.display = "block";
+        manualStartBtn.style.display = "none";
+        loaderTitle.textContent = "Starting WonderLab WebAR…";
+
+        await mindarThree.start();
+        loaderScreen.classList.add("hidden");
+
+        renderer.setAnimationLoop(() => {
+          const dt = Math.min(clock.getDelta(), 0.05);
+          const elapsed = clock.getElapsedTime();
+          controllers.forEach((c, i) => {
+            if (activeTrackedIdx === i || (freePreviewActive && selectedIdx === i)) {
+              c.update(elapsed, dt);
+            }
+          });
+          renderer.render(scene, camera);
+        });
+      } catch (err) {
+        console.warn("Auto camera start paused or blocked:", err);
+        loaderSpinner.style.display = "none";
+        loaderTitle.textContent = "Ready to Scan in WebAR";
+        loaderText.textContent = "Tap below to grant camera permission and scan the WonderLab AR Marker on screen.";
+        manualStartBtn.style.display = "inline-block";
+      }
+    }
+
+    manualStartBtn.addEventListener("click", () => {
+      ensureAudio();
+      bootAR();
+    });
+
+    bootAR();
+  </script>
+</body>
+</html>

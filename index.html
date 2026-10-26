@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>WonderLab AR — Print-to-WebAR Creative Studio for Education, Media & Brands</title>
+  <meta name="description" content="WonderLab AR transforms printed textbooks, tuition notes, newspapers, packaging, flash cards, brochures, and business cards into browser-based Augmented Reality — crafted in Sri Lanka by WonderLab Studio.">
+
+  <link rel="icon" href="wonderlab-logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- =========================================================
+       STICKY HEADER
+  ========================================================== -->
+  <header class="site-header" id="top">
+    <nav class="nav container" aria-label="Main Navigation">
+
+      <a class="brand" href="#top" aria-label="WonderLab AR Home">
+        <img src="wonderlab-logo.png" alt="WonderLab Studio Logo">
+        <div class="brand-wordmark">
+          <span class="brand-title">
+            WonderLab <span class="brand-ar-pill">AR</span>
+          </span>
+          <span class="brand-sub">By WonderLab Studio</span>
+        </div>
+      </a>
+
+      <button class="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links">
+        <a href="#live-demo">Live Simulator</a>
+        <a href="#why">Why Print-to-AR</a>
+        <a href="#use-cases">Applications</a>
+        <a href="#industries">Industries</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#analytics">Analytics</a>
+        <a href="contact.html">Contact</a>
+        <a href="#contact" class="nav-cta">
+          Start AR Project <span>↗</span>
+        </a>
+      </div>
+
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- =========================================================
+         HERO SECTION
+    ========================================================== -->
+    <section class="hero">
+      <div class="container hero-grid">
+
+        <!-- HERO COPY -->
+        <div class="hero-copy reveal">
+          <p class="eyebrow">
+            <span class="dot"></span>
+            PRINT-TO-AR CREATIVE PRODUCTION • SRI LANKA
+          </p>
+
+          <h1>
+            Every printed surface becomes
+            <span class="gradient-text">live, interactive media.</span>
+          </h1>
+
+          <p class="hero-lead">
+            WonderLab AR turns textbooks, tuition notes, newspapers, posters, packaging, flash cards, and business cards into cinema-grade WebAR experiences — crafted end-to-end by our 3D, VFX, and AI studio and delivered instantly in any mobile browser.
+          </p>
+
+          <div class="hero-frictionless" aria-label="Key WebAR Benefits">
+            <span class="friction-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              No App Install
+            </span>
+            <span class="friction-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              Zero Downloads
+            </span>
+            <span class="friction-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              Just Scan &amp; Experience
+            </span>
+          </div>
+
+          <div class="hero-actions">
+            <a href="#use-cases" class="btn btn-primary">
+              View Industry Applications <span>↗</span>
+            </a>
+            <a href="#live-demo" class="btn btn-ghost">
+              Try Live AR Simulator <span>◎</span>
+            </a>
+          </div>
+
+          <div class="hero-meta">
+            <div>
+              <strong>WebAR</strong>
+              <span>Browser-Native Delivery</span>
+            </div>
+            <div>
+              <strong>3D + VFX</strong>
+              <span>Custom Studio Production</span>
+            </div>
+            <div>
+              <strong>QR + Marker</strong>
+              <span>Works on Existing Print</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HERO INTERACTIVE SCANNER VISUAL -->
+        <div class="hero-visual reveal delay-1">
+          <div class="hero-card">
+
+            <div class="hero-card-bar">
+              <span>WONDERLAB AR / LIVE ENGINE</span>
+              <span class="status-live" id="heroMarkerStatus">MARKER DETECTED</span>
+            </div>
+
+            <div class="hero-viewport">
+              <img
+                id="heroPreviewImg"
+                src="assets/hero-ar-scan.jpg"
+                alt="Smartphone scanning printed diagram to launch 3D Augmented Reality experience">
+
+              <div class="scan-beam"></div>
+              <div class="reticle tl"></div>
+              <div class="reticle tr"></div>
+              <div class="reticle bl"></div>
+              <div class="reticle br"></div>
+
+              <div class="hud-badge hud-top-left" id="heroLayerBadge">
+                ◎ 3D HOLOGRAM + VOICEOVER
+              </div>
+
+              <div class="hud-badge hud-bottom-left">
+                <div>
+                  <div id="heroSceneTitle">Human Heart — A/L Biology</div>
+                  <small id="heroSceneSub">Safari &amp; Chrome WebAR • 60 FPS Tracking</small>
+                </div>
+                <span style="color: var(--cyan); font-size: 11px;">LIVE ↗</span>
+              </div>
+            </div>
+
+            <div class="hero-scene-tabs" role="tablist" aria-label="Preview AR Scenes">
+              <button class="hero-scene-btn active" type="button"
+                data-img="assets/hero-ar-scan.jpg"
+                data-badge="◎ 3D HOLOGRAM + VOICEOVER"
+                data-title="Human Heart — A/L Biology"
+                data-sub="Safari & Chrome WebAR • 60 FPS Tracking">
+                Biology 3D
+              </button>
+              <button class="hero-scene-btn" type="button"
+                data-img="assets/usecase-advertising.jpg"
+                data-badge="✦ 360° VIRTUAL SHOWROOM"
+                data-title="Newspaper Print Ad → 3D Sneaker"
+                data-sub="Interactive Specs + Direct Shop CTA">
+                Print Ad
+              </button>
+              <button class="hero-scene-btn" type="button"
+                data-img="assets/usecase-packaging.jpg"
+                data-badge="◈ SMART SKU PACKAGING"
+                data-title="Ceylon Tea Box → Estate Story"
+                data-sub="QR + Marker Tracking • Brand Film">
+                Packaging
+              </button>
+              <button class="hero-scene-btn" type="button"
+                data-img="assets/usecase-tourism.jpg"
+                data-badge="⌁ HERITAGE AUDIO GUIDE"
+                data-title="Sigiriya Brochure → 3D Fortress"
+                data-sub="Multilingual Narration + Map Pins">
+                Tourism
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         CAPABILITIES MARQUEE
+    ========================================================== -->
+    <section class="marquee" aria-label="WonderLab AR Capabilities">
+      <div class="marquee-track">
+        <span>PRINT-TO-WEBAR</span><i>✦</i>
+        <span>TUITION &amp; EXAM WORKBOOKS</span><i>✦</i>
+        <span>NEWSPAPER &amp; POSTER ADS</span><i>✦</i>
+        <span>AR FLASH CARDS</span><i>✦</i>
+        <span>SMART PRODUCT PACKAGING</span><i>✦</i>
+        <span>AR BUSINESS CARDS</span><i>✦</i>
+        <span>TOURISM &amp; HERITAGE GUIDES</span><i>✦</i>
+        <span>3D • AI • VFX OVERLAYS</span><i>✦</i>
+        <span>NO APP REQUIRED</span><i>✦</i>
+        <span>PRINT-TO-WEBAR</span><i>✦</i>
+        <span>TUITION &amp; EXAM WORKBOOKS</span><i>✦</i>
+        <span>NEWSPAPER &amp; POSTER ADS</span><i>✦</i>
+        <span>AR FLASH CARDS</span><i>✦</i>
+        <span>SMART PRODUCT PACKAGING</span><i>✦</i>
+        <span>AR BUSINESS CARDS</span><i>✦</i>
+        <span>TOURISM &amp; HERITAGE GUIDES</span><i>✦</i>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         EVERY PRINTED PAGE STORY BANNER
+    ========================================================== -->
+    <section class="story-banner">
+      <div class="container story-banner-inner reveal">
+        <p class="eyebrow"><span class="dot"></span> THE FUTURE OF PRINT IS INTERACTIVE</p>
+        <h2>
+          Every printed page has a <span class="gradient-text">story waiting to come alive.</span>
+        </h2>
+        <p>
+          Transform static materials your audience already holds in their hands into living 3D worlds, instructor holograms, AI films, and measurable conversion funnels — with zero app friction.
+        </p>
+
+        <div class="print-formats-row">
+          <span class="print-format-chip">📚 School Textbooks</span>
+          <span class="print-format-chip">📝 O/L &amp; A/L Tuition Notes</span>
+          <span class="print-format-chip">🗞️ Newspapers &amp; Magazines</span>
+          <span class="print-format-chip">🎯 Campaign Posters &amp; Flyers</span>
+          <span class="print-format-chip">🃏 Educational AR Flash Cards</span>
+          <span class="print-format-chip">📦 Retail Product Packaging</span>
+          <span class="print-format-chip">🗺️ Tourism Brochures &amp; Maps</span>
+          <span class="print-format-chip">💼 Executive AR Business Cards</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         REAL LIVE WEBAR SAMPLES — MARKER + QR SCANNER (#live-demo)
+    ========================================================== -->
+    <section class="section simulator-section" id="live-demo">
+      <div class="container">
+
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow"><span class="dot"></span> REAL WEBAR SAMPLES • SCAN WITH YOUR PHONE</p>
+            <h2>
+              Try live WebAR <span class="gradient-text">right from your screen.</span>
+            </h2>
+          </div>
+          <p class="section-intro">
+            Select any sample tab below, scan the QR code with your phone to launch the WonderLab AR Camera, and point your phone at the Image Marker to watch the 3D experience come alive!
+          </p>
+        </div>
+
+        <div class="simulator-grid">
+
+          <!-- SCENARIO TAB BUTTONS -->
+          <div class="scenario-list reveal" role="tablist" aria-label="Live WebAR Sample Tabs">
+
+            <button class="scenario-btn active" type="button" data-scenario="heart">
+              <div class="scenario-icon">🫀</div>
+              <div>
+                <strong>Tuition — A/L Biology Heart</strong>
+                <span>Scan the printed heart diagram to launch a live 72 BPM beating 3D heart, blood flow &amp; voiceover.</span>
+              </div>
+              <span class="scenario-tag">Tuition</span>
+            </button>
+
+            <button class="scenario-btn" type="button" data-scenario="showroom">
+              <div class="scenario-icon">👟</div>
+              <div>
+                <strong>Media Ads — 360° Sneaker Ad</strong>
+                <span>Scan the print ad poster to launch a rotating 3D Aero-X sneaker showroom &amp; color switcher.</span>
+              </div>
+              <span class="scenario-tag">Media Ad</span>
+            </button>
+
+            <button class="scenario-btn" type="button" data-scenario="science">
+              <div class="scenario-icon">🪐</div>
+              <div>
+                <strong>Publishing — Solar Flash Card</strong>
+                <span>Scan the science flash card to see all 8 3D planets &amp; Saturn's rings orbit a glowing Sun.</span>
+              </div>
+              <span class="scenario-tag">Publishing</span>
+            </button>
+
+            <button class="scenario-btn" type="button" data-scenario="packaging">
+              <div class="scenario-icon">🍵</div>
+              <div>
+                <strong>Packaging — Ceylon Tea Box</strong>
+                <span>Scan the luxury tea label to unlock a 3D gold tea caddy, swirling leaves &amp; estate origin story.</span>
+              </div>
+              <span class="scenario-tag">Packaging</span>
+            </button>
+
+            <button class="scenario-btn" type="button" data-scenario="bcard">
+              <div class="scenario-icon">💼</div>
+              <div>
+                <strong>Corporate — AR Business Card</strong>
+                <span>Scan the WonderLab Studio card to launch our 3D emblem hologram &amp; one-tap WhatsApp connect.</span>
+              </div>
+              <span class="scenario-tag">Corporate</span>
+            </button>
+
+          </div>
+
+          <!-- RIGHT BOX: ACTIVE IMAGE MARKER + QR CODE + INSTRUCTIONS -->
+          <div class="sim-stage-card reveal delay-1">
+
+            <div class="sim-top-bar">
+              <div class="sim-marker-meta">
+                <span class="sim-marker-badge" id="simMarkerBadge">MARKER 01 • TUITION</span>
+                <span class="sim-marker-name" id="simMarkerName">Human Heart — A/L Biology</span>
+              </div>
+
+              <div class="sim-top-tools">
+                <button type="button" class="sim-tool-btn" id="btnEnlargeMarker" title="View larger marker for easier scanning">
+                  <span>⛶</span> Enlarge Marker
+                </button>
+                <a class="sim-tool-btn" id="btnDownloadMarker" href="assets/markers/marker-heart.jpg" download="WonderLab-AR-Marker-Heart.jpg">
+                  <span>⬇</span> Download Marker
+                </a>
+              </div>
+            </div>
+
+            <div class="marker-qr-grid">
+
+              <!-- IMAGE MARKER DISPLAY -->
+              <div class="marker-stage-col">
+                <div class="marker-card-frame" id="markerCardFrame" title="Click to enlarge marker">
+                  <img
+                    id="activeMarkerImg"
+                    src="assets/markers/marker-heart.jpg"
+                    alt="WonderLab AR Scannable Image Marker — Human Heart A/L Biology">
+                </div>
+                <div class="marker-caption">
+                  <i>⌖</i>
+                  <span>Point your phone's AR Camera at this Marker Image</span>
+                </div>
+              </div>
+
+              <!-- QR CODE + STEP-BY-STEP INSTRUCTIONS -->
+              <div class="qr-guide-panel">
+                <div class="qr-header-box">
+                  <div class="qr-svg-wrap" id="arQrBox" aria-label="QR Code to open WonderLab AR Camera">
+                    <!-- Dynamic SVG QR Code injected by script.js -->
+                  </div>
+                  <div class="qr-call-copy">
+                    <small>● LIVE AR CAMERA LINK</small>
+                    <h4>Scan QR with Your Phone</h4>
+                    <p>Opens the browser-based WebAR scanner directly in Safari or Chrome.</p>
+                  </div>
+                </div>
+
+                <ol class="ar-steps-mini">
+                  <li>
+                    <b class="step-badge">1</b>
+                    <span><strong>Scan the QR code</strong> above using your smartphone camera (or tap <em>Open AR Camera</em> below).</span>
+                  </li>
+                  <li>
+                    <b class="step-badge">2</b>
+                    <span><strong>Allow camera access</strong> when your mobile browser opens — zero app downloads needed.</span>
+                  </li>
+                  <li>
+                    <b class="step-badge">3</b>
+                    <span><strong>Aim at the Marker Image</strong> on the left to watch the live 3D AR sample lock onto your screen!</span>
+                  </li>
+                </ol>
+
+                <div class="qr-action-btns">
+                  <a class="btn btn-gradient" id="openArCameraLink" href="ar-camera.html?scene=heart" target="_blank" rel="noopener">
+                    Open AR Camera <span>↗</span>
+                  </a>
+                  <button type="button" class="btn btn-ghost" id="btnCopyArUrl">
+                    Copy Link
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- WHAT PLAYS ON SCAN FOOTER STRIP -->
+            <div class="what-plays-strip">
+              <span><strong>Sample Plays:</strong> <span id="simSampleSummary">Beating 3D Heart + Blood Flow + Voiceover</span></span>
+              <div class="what-plays-pills" id="simPills">
+                <span>72 BPM 3D Mesh</span>
+                <span>Blood Particles</span>
+                <span>Audio Lesson</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         PLATFORM RATIONALE — GAPS IN SRI LANKAN PRINT MEDIA (#why)
+    ========================================================== -->
+    <section class="section rationale-section" id="why">
+      <div class="container">
+
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow"><span class="dot"></span> WHY WONDERLAB AR</p>
+            <h2>
+              Built for structural gaps in <span class="gradient-text">Sri Lankan print media.</span>
+            </h2>
+          </div>
+          <p class="section-intro">
+            Print remains the backbone of education, retail, and mass advertising across Sri Lanka. WonderLab AR adds an unforgettable digital layer without changing how you print — or asking audiences to download an app.
+          </p>
+        </div>
+
+        <div class="rationale-grid">
+
+          <!-- GAP 01 -->
+          <article class="rationale-card reveal">
+            <div>
+              <div class="rationale-top">
+                <div class="rationale-icon">📖</div>
+                <span class="rationale-num">GAP / 01</span>
+              </div>
+              <h3>Static learning materials</h3>
+              <p class="rationale-problem">
+                Tuition centres and publishers distribute printed notes, tutes, and textbooks by the thousands — yet complex science, anatomy, and engineering diagrams stay flat and hard to visualize.
+              </p>
+            </div>
+            <div class="rationale-solution">
+              <b>→</b>
+              <span>Deliver marker-linked 3D animations, green-screen instructor overlays, and guided voice narration on every page.</span>
+            </div>
+          </article>
+
+          <!-- GAP 02 -->
+          <article class="rationale-card reveal delay-1">
+            <div>
+              <div class="rationale-top">
+                <div class="rationale-icon">📣</div>
+                <span class="rationale-num">GAP / 02</span>
+              </div>
+              <h3>Underperforming print advertising</h3>
+              <p class="rationale-problem">
+                Newspaper placements, magazine spreads, and outdoor posters remain single-frame creatives with zero interaction layer and no measurable proof of audience engagement.
+              </p>
+            </div>
+            <div class="rationale-solution">
+              <b>→</b>
+              <span>Extend every print ad with 3D product showrooms, AI commercial films, scan analytics, and direct WhatsApp/shop actions.</span>
+            </div>
+          </article>
+
+          <!-- GAP 03 -->
+          <article class="rationale-card reveal delay-2">
+            <div>
+              <div class="rationale-top">
+                <div class="rationale-icon">🎬</div>
+                <span class="rationale-num">GAP / 03</span>
+              </div>
+              <h3>Disconnected digital content</h3>
+              <p class="rationale-problem">
+                Brand videos and educational lessons sit buried on YouTube or separate LMS portals — completely detached from the physical books, packs, and cards in your audience's hands.
+              </p>
+            </div>
+            <div class="rationale-solution">
+              <b>→</b>
+              <span>Unify print artwork, custom 3D/VFX content, QR markers, and instant mobile WebAR in one turnkey studio workflow.</span>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- PRINT WAS NEVER MEANT TO STAY FLAT -->
+        <div class="flat-print-box reveal">
+          <p class="eyebrow"><span class="dot"></span> SEAMLESS PRINT-TO-DIGITAL BRIDGE</p>
+          <h3>Print was never meant to <span class="gradient-text">stay flat.</span></h3>
+          <p>
+            You supply the textbook page, poster, package dieline, or card. WonderLab Studio designs the 3D models, animations, AI visuals, and WebAR tracking — ready to scan in seconds.
+          </p>
+
+          <div class="three-pillars">
+            <div class="pillar-item">
+              <div class="pillar-badge">⌖</div>
+              <strong>01. Marker on Print</strong>
+              <span>Use your existing diagram, artwork, or custom QR marker on any printed surface.</span>
+            </div>
+            <div class="pillar-item">
+              <div class="pillar-badge">✦</div>
+              <strong>02. Studio Content Attached</strong>
+              <span>We bind custom 3D models, VFX animations, instructor video, audio &amp; CTAs.</span>
+            </div>
+            <div class="pillar-item">
+              <div class="pillar-badge">🌐</div>
+              <strong>03. Live in Mobile Browser</strong>
+              <span>Audiences scan and experience instant AR in Safari or Chrome — no app needed.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         INDUSTRY APPLICATIONS (#use-cases)
+    ========================================================== -->
+    <section class="section usecases-section" id="use-cases">
+      <div class="container">
+
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow"><span class="dot"></span> INDUSTRY APPLICATIONS</p>
+            <h2>
+              Deployed where print already <span class="gradient-text">reaches your audience.</span>
+            </h2>
+          </div>
+          <p class="section-intro">
+            Six proven print-to-WebAR solutions engineered and produced in-house by WonderLab Studio for Sri Lankan and international organisations.
+          </p>
+        </div>
+
+        <div class="usecase-stack">
+
+          <!-- APPLICATION 01: TUITION & EXAM PREP -->
+          <article class="usecase-card reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-tuition.jpg" alt="O/L and A/L student scanning biology workbook diagram to launch 3D heart and instructor hologram" loading="lazy">
+              <span class="usecase-media-tag">01 • TUITION &amp; EXAM PREP</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">🎓 Tuition &amp; Exam Prep</span>
+              <h3>Interactive revision for O/L, A/L &amp; professional institutes</h3>
+              <p>
+                Embed an AR marker right on a printed diagram in your tuition tute or revision workbook. Students scan once with their phone, watch the lecturer appear in AR, explore an animated 3D breakdown, and follow a structured voiceover aligned to the syllabus.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Give tuition brands an unmistakable competitive edge: printed tutes students already rely on, upgraded with cinema-grade 3D visualization.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>Instructor hologram overlays</li>
+                <li>Animated 3D concept models</li>
+                <li>Sinhala / English / Tamil audio</li>
+                <li>Zero app download required</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- APPLICATION 02: NEWSPAPERS, POSTERS & BRANDS -->
+          <article class="usecase-card reverse reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-advertising.jpg" alt="Newspaper print advertisement launching a floating 3D sneaker virtual showroom in WebAR" loading="lazy">
+              <span class="usecase-media-tag">02 • NEWSPAPERS &amp; POSTERS</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">📣 Newspapers, Posters &amp; Brands</span>
+              <h3>Premium print placements with measurable 3D depth</h3>
+              <p>
+                Pair a Sunday newspaper ad, magazine spread, billboard handout, or promotional poster with a WonderLab QR marker. Readers launch an instant browser showroom where your product renders in photoreal 3D, an AI commercial reel plays, and purchase is one tap away.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Move beyond flat impressions — offer advertisers interactive dwell time, viral shareability, and direct conversion paths.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>Photoreal 3D product views</li>
+                <li>AI &amp; VFX commercial reels</li>
+                <li>One-tap Buy / WhatsApp CTAs</li>
+                <li>Print-ready QR &amp; marker kits</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- APPLICATION 03: EDUCATION PUBLISHERS & AR FLASH CARDS -->
+          <article class="usecase-card reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-publishing.jpg" alt="School science textbook and AR flash cards launching a glowing 3D solar system" loading="lazy">
+              <span class="usecase-media-tag">03 • BOOKS &amp; AR FLASH CARDS</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">📚 Education Publishers &amp; Flash Cards</span>
+              <h3>Textbooks, storybooks &amp; AR Flash Cards built for the next generation</h3>
+              <p>
+                Publish school books, children's activity sets, and WonderLab's signature <strong>AR Flash Cards</strong> with registered image markers. Solar systems orbit, dinosaurs walk across the desk, pronunciation audio plays, and digital lessons can be updated anytime without reprinting stock.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Stand out in bookshops and schools with AR-ready editions your sales team can demo live in 5 seconds.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>Interactive AR Flash Card sets</li>
+                <li>Living 3D science &amp; kids art</li>
+                <li>Update media without reprinting</li>
+                <li>Works on entry-level phones</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- APPLICATION 04: PRODUCT PACKAGING -->
+          <article class="usecase-card reverse reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-packaging.jpg" alt="Premium Ceylon tea retail box scanned by smartphone to reveal 3D botanical story in AR" loading="lazy">
+              <span class="usecase-media-tag">04 • SMART PACKAGING</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">📦 Product Packaging</span>
+              <h3>Packaging that tells your product story right on the shelf</h3>
+              <p>
+                Add a subtle marker and QR to cartons, tea tins, cosmetics bottles, food labels, or gift sleeves. Shoppers scan in-store or at home to inspect 3D ingredients, watch estate-to-cup brand films, verify authenticity, and reorder directly.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Turn every physical SKU into a 24/7 digital salesperson — ideal for Ceylon exports, FMCG, cosmetics, and electronics.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>3D product &amp; ingredient views</li>
+                <li>How-to &amp; origin brand films</li>
+                <li>Shop, claim or reorder CTAs</li>
+                <li>Compatible with existing packs</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- APPLICATION 05: TOURISM & HERITAGE -->
+          <article class="usecase-card reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-tourism.jpg" alt="Sri Lanka travel brochure projecting a 3D holographic model of Sigiriya Lion Rock" loading="lazy">
+              <span class="usecase-media-tag">05 • TOURISM &amp; HOSPITALITY</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">🗺️ Tourism &amp; Heritage</span>
+              <h3>Brochures &amp; maps that become guided cultural experiences</h3>
+              <p>
+                Place markers on Sri Lankan destination maps, hotel compendiums, museum tickets, and cultural pamphlets. Travellers scan to preview 3D landmarks like Sigiriya, listen to multilingual audio guides, and open itineraries or booking links in one seamless flow.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Give hotels, DMCs, and heritage sites a luxury interactive print layer — with zero tourist app downloads.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>3D landmark &amp; resort previews</li>
+                <li>Multilingual audio storytelling</li>
+                <li>Interactive route &amp; booking links</li>
+                <li>Instant browser launch on roaming</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- APPLICATION 06: EXECUTIVE AR BUSINESS CARDS -->
+          <article class="usecase-card reverse reveal">
+            <div class="usecase-media">
+              <img src="assets/usecase-businesscard.jpg" alt="Matte black executive AR business card launching holographic video profile and contact buttons" loading="lazy">
+              <span class="usecase-media-tag">06 • AR BUSINESS CARDS</span>
+            </div>
+            <div class="usecase-body">
+              <span class="usecase-category">💼 Corporate &amp; Events</span>
+              <h3>Executive AR Business Cards &amp; interactive event invites</h3>
+              <p>
+                Make every handshake unforgettable. When a prospect scans your printed business card or VIP event pass, your personal video greeting appears alongside a floating 3D brand emblem, portfolio reel, and one-tap buttons to save your contact or message on WhatsApp.
+              </p>
+              <div class="usecase-highlight">
+                <span>✦</span>
+                <span>Designed and produced end-to-end by WonderLab Studio — from luxury card artwork to custom 3D motion.</span>
+              </div>
+              <ul class="usecase-features">
+                <li>Holographic founder greeting</li>
+                <li>3D animated logo &amp; portfolio</li>
+                <li>One-tap Save Contact (vCard)</li>
+                <li>VIP event &amp; launch invitations</li>
+              </ul>
+            </div>
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         BUILT FOR — TEAMS ACROSS INDUSTRIES (#industries)
+    ========================================================== -->
+    <section class="section industries-section" id="industries">
+      <div class="container">
+
+        <div class="center-head reveal">
+          <p class="eyebrow"><span class="dot"></span> BUILT FOR SCALE</p>
+          <h2>
+            Teams across <span class="gradient-text">print-driven industries.</span>
+          </h2>
+          <p>
+            If it can be printed, WonderLab AR can bring it to life in the browser.
+          </p>
+        </div>
+
+        <div class="industries-cards">
+          <article class="ind-card reveal">
+            <div class="ind-icon">🎓</div>
+            <h3>Education</h3>
+            <p>Turn tuition notes, past papers, and revision tutes into 3D learning sessions.</p>
+          </article>
+          <article class="ind-card reveal delay-1">
+            <div class="ind-icon">📚</div>
+            <h3>Publishing</h3>
+            <p>Bring textbooks, children's books, flash cards, and magazines to life.</p>
+          </article>
+          <article class="ind-card reveal delay-2">
+            <div class="ind-icon">🎯</div>
+            <h3>Advertising</h3>
+            <p>Transform newspaper ads, flyers, and posters into 3D virtual showrooms.</p>
+          </article>
+          <article class="ind-card reveal delay-3">
+            <div class="ind-icon">📦</div>
+            <h3>Packaging</h3>
+            <p>Upgrade tea, cosmetics, FMCG, and retail boxes into interactive stories.</p>
+          </article>
+          <article class="ind-card reveal">
+            <div class="ind-icon">🏛️</div>
+            <h3>Tourism</h3>
+            <p>Add 3D landmarks and multilingual audio guides to maps and hotel brochures.</p>
+          </article>
+          <article class="ind-card reveal delay-1">
+            <div class="ind-icon">✨</div>
+            <h3>Events &amp; VIP</h3>
+            <p>Launch AR business cards, stage posters, and experiential brand activations.</p>
+          </article>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         STATS STRIP
+    ========================================================== -->
+    <section class="stats-section" aria-label="Key Performance Metrics">
+      <div class="container stats-grid">
+
+        <div class="stat reveal">
+          <div class="stat-value">
+            <span data-count="0">0</span><span class="stat-suffix">Apps</span>
+          </div>
+          <span class="stat-label">Required for your audience — 100% instant mobile browser delivery</span>
+        </div>
+
+        <div class="stat reveal delay-1">
+          <div class="stat-value">
+            <span data-count="25">0</span><span class="stat-suffix">+ Yrs</span>
+          </div>
+          <span class="stat-label">Combined visual production, VFX &amp; 3D direction at WonderLab Studio</span>
+        </div>
+
+        <div class="stat reveal delay-2">
+          <div class="stat-value">
+            <span data-count="5">0</span><span class="stat-suffix">×</span>
+          </div>
+          <span class="stat-label">Higher dwell time &amp; recall vs. traditional flat print placements</span>
+        </div>
+
+        <div class="stat reveal delay-3">
+          <div class="stat-value">
+            <span data-count="360">0</span><span class="stat-suffix">°</span>
+          </div>
+          <span class="stat-label">Turnkey production: 3D, AI video, VFX, QR markers &amp; cloud hosting</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         OPERATING MODEL & 5-STEP WORKFLOW (#how-it-works)
+    ========================================================== -->
+    <section class="section workflow-section" id="how-it-works">
+      <div class="container">
+
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow"><span class="dot"></span> DONE-FOR-YOU OPERATING MODEL</p>
+            <h2>
+              From print artwork to <span class="gradient-text">live WebAR in three stages.</span>
+            </h2>
+          </div>
+          <p class="section-intro">
+            No complex software for your team to learn. Send us your print layout or concept, and WonderLab handles every creative and technical step.
+          </p>
+        </div>
+
+        <!-- 3 STAGES -->
+        <div class="stages-grid">
+          <article class="stage-card reveal">
+            <div class="stage-number">01</div>
+            <h3>Share your print asset</h3>
+            <p>
+              Send us your textbook diagram, tuition tute, newspaper ad layout, packaging dieline, brochure, or business card design — new or already printed.
+            </p>
+          </article>
+
+          <article class="stage-card reveal delay-1">
+            <div class="stage-number">02</div>
+            <h3>We craft &amp; bind the AR layer</h3>
+            <p>
+              Our studio produces custom 3D models, animations, AI/VFX reels, or green-screen instructor overlays, binds them to your marker, and generates production QR codes.
+            </p>
+          </article>
+
+          <article class="stage-card reveal delay-2">
+            <div class="stage-number">03</div>
+            <h3>Launch on any smartphone</h3>
+            <p>
+              We host and optimize the WebAR experience for fast loading on Sri Lankan &amp; global mobile networks. Audiences scan and engage right on the printed page.
+            </p>
+          </article>
+        </div>
+
+        <!-- 5 STEPS FROM MARKER TO LIVE EXPERIENCE -->
+        <div class="steps-subhead reveal">
+          <div>
+            <p class="eyebrow">END-TO-END WORKFLOW</p>
+            <h3>Five steps from marker to <span class="gradient-text">live experience.</span></h3>
+          </div>
+        </div>
+
+        <div class="process-list">
+
+          <div class="process-item reveal">
+            <span class="process-no">STEP 01</span>
+            <div>
+              <h4>Register your marker image</h4>
+              <p>We optimize and train high-precision WebAR image tracking on your printed diagram, poster, card, or label.</p>
+            </div>
+            <span class="process-badge">Print Artwork</span>
+          </div>
+
+          <div class="process-item reveal delay-1">
+            <span class="process-no">STEP 02</span>
+            <div>
+              <h4>Produce custom 3D, video, audio &amp; interactive overlays</h4>
+              <p>WonderLab's artists build photoreal 3D assets, motion graphics, voiceovers, and tap-to-action buttons tailored to your goal.</p>
+            </div>
+            <span class="process-badge">Studio Craft</span>
+          </div>
+
+          <div class="process-item reveal delay-2">
+            <span class="process-no">STEP 03</span>
+            <div>
+              <h4>Generate branded QR &amp; print-ready guidelines</h4>
+              <p>Receive high-resolution vector QR codes and pre-press test proofs verified under real indoor and daylight lighting.</p>
+            </div>
+            <span class="process-badge">Pre-Press Ready</span>
+          </div>
+
+          <div class="process-item reveal delay-3">
+            <span class="process-no">STEP 04</span>
+            <div>
+              <h4>Print anywhere at any volume</h4>
+              <p>Works effortlessly across offset newspapers, digital tutes, matte/gloss laminated packaging, flash cards, and brochures.</p>
+            </div>
+            <span class="process-badge">Any Printer</span>
+          </div>
+
+          <div class="process-item reveal">
+            <span class="process-no">STEP 05</span>
+            <div>
+              <h4>Users scan &amp; experience your content instantly</h4>
+              <p>One scan launches the camera in iOS Safari or Android Chrome — delivering jaw-dropping AR and real-time scan analytics.</p>
+            </div>
+            <span class="process-badge">Instant Live AR</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         NO APP REQUIRED — BROWSER NATIVE (#no-app)
+    ========================================================== -->
+    <section class="noapp-section" id="no-app">
+      <div class="container">
+
+        <div class="center-head reveal">
+          <p class="eyebrow"><span class="dot"></span> ZERO FRICTION DELIVERY</p>
+          <h2>
+            Works directly in the <span class="gradient-text">mobile browser.</span>
+          </h2>
+          <p>
+            No App Store downloads. No logins. No barriers between your printed page and your audience.
+          </p>
+        </div>
+
+        <div class="noapp-flow">
+          <div class="noapp-step reveal">
+            <div class="noapp-step-num">1</div>
+            <h3>Scan</h3>
+            <p>Point any iPhone or Android camera at the printed QR code on your page or package.</p>
+          </div>
+          <div class="noapp-step reveal delay-1">
+            <div class="noapp-step-num">2</div>
+            <h3>Open</h3>
+            <p>A lightweight WebAR lens opens immediately in Safari or Chrome — optimized for 4G/5G.</p>
+          </div>
+          <div class="noapp-step reveal delay-2">
+            <div class="noapp-step-num">3</div>
+            <h3>Experience</h3>
+            <p>3D models, hologram instructors, audio, and interactive buttons lock onto the printed surface.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         ANALYTICS INCLUDED (#analytics)
+    ========================================================== -->
+    <section class="section analytics-section" id="analytics">
+      <div class="container analytics-grid">
+
+        <div class="reveal">
+          <p class="eyebrow"><span class="dot"></span> MEASURABLE PRINT PERFORMANCE</p>
+          <h2 style="font-size: clamp(36px, 4.4vw, 58px); letter-spacing: -0.045em; line-height: 1.03;">
+            Know exactly how your <span class="gradient-text">audience engages.</span>
+          </h2>
+          <p style="color: var(--muted); font-size: 16px; margin-top: 20px;">
+            For the first time, your physical print runs report digital-grade engagement metrics. Every WonderLab AR campaign includes clean client reporting so educators, publishers, and brand managers see real ROI.
+          </p>
+
+          <ul class="analytics-checklist">
+            <li><span class="check-badge">✓</span> Total print scans &amp; daily scan velocity</li>
+            <li><span class="check-badge">✓</span> Unique mobile visitors &amp; repeat study/view sessions</li>
+            <li><span class="check-badge">✓</span> Average AR dwell time spent on page</li>
+            <li><span class="check-badge">✓</span> Device, OS &amp; regional city breakdown</li>
+            <li><span class="check-badge">✓</span> CTA button clicks (WhatsApp, Shop, Video &amp; Bookings)</li>
+          </ul>
+        </div>
+
+        <!-- INTERACTIVE MOCK ANALYTICS DASHBOARD -->
+        <div class="dashboard-card reveal delay-1">
+          <div class="dash-header">
+            <div class="dash-title">
+              <span class="status-live"></span> WONDERLAB AR INSIGHTS
+            </div>
+            <div class="dash-tabs" role="tablist" aria-label="Sample Campaign Reports">
+              <button type="button" class="dash-tab active" data-campaign="tuition">A/L Biology Tute</button>
+              <button type="button" class="dash-tab" data-campaign="newspaper">Sunday Print Ad</button>
+              <button type="button" class="dash-tab" data-campaign="tea">Ceylon Tea Box</button>
+            </div>
+          </div>
+
+          <div class="dash-kpis">
+            <div class="dash-kpi">
+              <small>Total Scans (30d)</small>
+              <strong id="kpiScans">48,240</strong><em>↑ 34%</em>
+            </div>
+            <div class="dash-kpi">
+              <small>Unique Visitors</small>
+              <strong id="kpiUsers">19,810</strong><em>↑ 28%</em>
+            </div>
+            <div class="dash-kpi">
+              <small>Avg. Dwell Time</small>
+              <strong id="kpiTime">2m 42s</strong><em>CTA <span id="kpiCta">18.4%</span></em>
+            </div>
+          </div>
+
+          <div class="dash-chart-box">
+            <div class="dash-chart-head">
+              <span id="dashCampaignLabel">Weekly Scan Activity — Islandwide A/L Revision Print Run</span>
+              <span style="color: var(--cyan); font-weight: 600;">Live Telemetry</span>
+            </div>
+            <div class="bar-chart" id="dashBars">
+              <div class="bar-col"><div class="bar-fill" style="height: 48%;"></div><span>Mon</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 62%;"></div><span>Tue</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 56%;"></div><span>Wed</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 74%;"></div><span>Thu</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 82%;"></div><span>Fri</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 100%;"></div><span>Sat</span></div>
+              <div class="bar-col"><div class="bar-fill" style="height: 92%;"></div><span>Sun</span></div>
+            </div>
+            <div class="dash-devices">
+              <span id="dashDeviceSplit">📱 Android Chrome: 71% • iOS Safari: 29%</span>
+              <span id="dashTopRegion">📍 Top: Colombo, Kandy, Kurunegala, Galle</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         WHY WONDERLAB STUDIO — CREATIVE POWERHOUSE EDGE
+    ========================================================== -->
+    <section class="section studio-edge-section">
+      <div class="container about-grid">
+
+        <div class="about-visual reveal">
+          <div class="about-frame">
+            <img src="wonderlab-logo.png" alt="WonderLab Studio Emblem">
+            <div class="about-orbit" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="about-copy reveal delay-1">
+          <p class="eyebrow"><span class="dot"></span> THE WONDERLAB ADVANTAGE</p>
+          <h2>
+            More than AR software.<br>
+            <span class="gradient-text">A full 3D, VFX &amp; AI studio.</span>
+          </h2>
+          <p>
+            Great Augmented Reality is only as compelling as what appears when someone scans the page. Unlike bare-bones QR tools, <strong>WonderLab AR</strong> is backed directly by <strong>WonderLab Studio</strong> — Sri Lanka's creative powerhouse for AI commercials, 3D product animation, and cinema VFX.
+          </p>
+          <p>
+            That means you don't need to hire separate 3D artists, video editors, and web developers. We concept, model, animate, composite, and deploy your entire Print-to-AR experience under one roof.
+          </p>
+
+          <div class="studio-synergy-grid">
+            <div class="synergy-item">
+              <strong>◈ Custom 3D &amp; Motion</strong>
+              <span>Photoreal product renders, anatomical animations &amp; stylised 3D worlds.</span>
+            </div>
+            <div class="synergy-item">
+              <strong>✦ AI Brand Films &amp; Avatars</strong>
+              <span>AI commercials, multilingual presenters &amp; next-gen campaign visuals.</span>
+            </div>
+            <div class="synergy-item">
+              <strong>⌁ Cinema VFX &amp; Green Screen</strong>
+              <span>Clean hologram key-outs for tuition lecturers, founders &amp; brand ambassadors.</span>
+            </div>
+            <div class="synergy-item">
+              <strong>◎ Turnkey Cloud WebAR</strong>
+              <span>Fast, reliable marker tracking, QR generation &amp; campaign reporting.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         CONTACT & INTERACTIVE AR PROJECT BRIEF BUILDER (#contact)
+    ========================================================== -->
+    <section class="section contact-section" id="contact">
+      <div class="container contact-grid">
+
+        <!-- LEFT: DIRECT CONTACT DETAILS -->
+        <div class="reveal">
+          <p class="eyebrow"><span class="dot"></span> LET'S BRING YOUR PRINT TO LIFE</p>
+          <h2 style="font-size: clamp(38px, 4.8vw, 64px); letter-spacing: -0.045em; line-height: 1.02;">
+            Ready to launch <span class="gradient-text">WonderLab AR?</span>
+          </h2>
+          <p style="color: var(--muted); font-size: 16px; margin-top: 20px; max-width: 480px;">
+            Talk to our Sri Lankan creative &amp; WebAR team about tuition workbooks, publishing, newspaper campaigns, product packaging, flash cards, or AR business cards. English &amp; Sinhala enquiries welcome.
+          </p>
+
+          <div class="contact-cards">
+            <a class="contact-info-card" href="https://wa.me/94769801157?text=Hi%20WonderLab%20AR%2C%20I%20would%20like%20to%20discuss%20a%20WebAR%20project." target="_blank" rel="noopener noreferrer">
+              <div>
+                <small>WHATSAPP &amp; DIRECT CALL • SRI LANKA</small>
+                <strong>+94 76 980 1157</strong>
+                <span>Fastest response • Request a live sample QR to scan</span>
+              </div>
+              <span style="font-size: 22px; color: var(--emerald);">↗</span>
+            </a>
+
+            <a class="contact-info-card" href="mailto:wonderlabstudio.lk@gmail.com?subject=WonderLab%20AR%20Project%20Enquiry">
+              <div>
+                <small>STUDIO EMAIL</small>
+                <strong>wonderlabstudio.lk@gmail.com</strong>
+                <span>Send print artwork, campaign briefs &amp; partnership enquiries</span>
+              </div>
+              <span style="font-size: 22px; color: var(--cyan);">↗</span>
+            </a>
+
+            <div class="contact-info-card">
+              <div>
+                <small>TURNAROUND &amp; SUPPORT</small>
+                <strong>Prototype Demo Ready in Days</strong>
+                <span>Sri Lanka Studio (GMT+5:30) • Serving local &amp; global brands</span>
+              </div>
+              <span style="font-size: 20px;">⚡</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: INTERACTIVE PROJECT CONFIGURATOR -->
+        <div class="brief-builder reveal delay-1">
+          <h3>Build Your AR Project Brief</h3>
+          <p>Select what you want to create and send it straight to our team on WhatsApp or Email in one tap.</p>
+
+          <form id="arBriefForm">
+            <div class="form-group">
+              <label class="form-label">1. Select Print Material / Industry</label>
+              <div class="chip-selector" data-group="material">
+                <button type="button" class="choice-chip selected" data-value="Tuition Notes / Exam Workbook">Tuition / Workbook</button>
+                <button type="button" class="choice-chip" data-value="Newspaper / Poster Ad">Newspaper / Poster Ad</button>
+                <button type="button" class="choice-chip" data-value="AR Flash Cards / Textbook">Flash Cards / Books</button>
+                <button type="button" class="choice-chip" data-value="Product Packaging">Product Packaging</button>
+                <button type="button" class="choice-chip" data-value="Tourism Brochure / Map">Tourism Brochure</button>
+                <button type="button" class="choice-chip" data-value="AR Business Card / Event">AR Business Card</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">2. AR Experience Layer Needed</label>
+              <div class="chip-selector" data-group="layer">
+                <button type="button" class="choice-chip selected" data-value="3D Model & Animation">3D Model &amp; Animation</button>
+                <button type="button" class="choice-chip" data-value="Instructor / Presenter Hologram Video">Hologram Video</button>
+                <button type="button" class="choice-chip" data-value="AI Commercial + CTA Links">AI Film + Shop CTA</button>
+                <button type="button" class="choice-chip" data-value="Audio Guide + Interactive Pins">Audio + Info Pins</button>
+              </div>
+            </div>
+
+            <div class="form-row form-group">
+              <div>
+                <label class="form-label" for="clientName">Your Name / Brand</label>
+                <input class="form-input" type="text" id="clientName" placeholder="e.g. Kasun / Apex Institute">
+              </div>
+              <div>
+                <label class="form-label" for="clientPhone">Phone / WhatsApp</label>
+                <input class="form-input" type="tel" id="clientPhone" placeholder="e.g. +94 77 123 4567">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="clientNotes">Project Idea (Optional)</label>
+              <textarea class="form-textarea" id="clientNotes" placeholder="Tell us roughly how many pages/designs or what should happen when users scan..."></textarea>
+            </div>
+
+            <div class="brief-actions">
+              <button type="button" class="btn btn-whatsapp" id="sendWhatsappBtn">
+                Send Brief on WhatsApp <span>↗</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="sendEmailBtn">
+                Send via Email <span>↗</span>
+              </button>
+            </div>
+            <p class="brief-note" id="briefFeedback">Typical response within a few hours • Free sample WebAR demo available on request.</p>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER
+  ========================================================== -->
+  <footer class="footer">
+    <div class="container footer-grid">
+
+      <div>
+        <a class="brand" href="#top">
+          <img src="wonderlab-logo.png" alt="WonderLab Studio">
+          <div class="brand-wordmark">
+            <span class="brand-title">WonderLab <span class="brand-ar-pill">AR</span></span>
+            <span class="brand-sub">Print-to-WebAR Studio</span>
+          </div>
+        </a>
+        <p class="footer-desc">
+          Print-to-AR creative production for education, publishing, newspapers, packaging, tourism, and modern brands. Crafted in Sri Lanka by WonderLab Studio.
+        </p>
+        <div class="footer-tags">
+          <span>WebAR</span>
+          <span>Image Tracking</span>
+          <span>3D &amp; VFX</span>
+          <span>QR Publishing</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explore AR</h4>
+        <ul>
+          <li><a href="#live-demo">Interactive AR Simulator</a></li>
+          <li><a href="#why">Why Print-to-AR</a></li>
+          <li><a href="#use-cases">Industry Applications</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#analytics">Campaign Analytics</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Solutions</h4>
+        <ul>
+          <li><a href="#use-cases">O/L &amp; A/L Tuition AR</a></li>
+          <li><a href="#use-cases">Newspaper &amp; Poster Ads</a></li>
+          <li><a href="#use-cases">AR Flash Cards &amp; Books</a></li>
+          <li><a href="#use-cases">Smart Packaging AR</a></li>
+          <li><a href="#use-cases">AR Business Cards</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>WonderLab Studio</h4>
+        <ul>
+          <li><a href="contact.html">Book Free AR Demo</a></li>
+          <li><a href="https://wa.me/94769801157" target="_blank" rel="noopener">WhatsApp: +94 76 980 1157</a></li>
+          <li><a href="mailto:wonderlabstudio.lk@gmail.com">wonderlabstudio.lk@gmail.com</a></li>
+          <li><a href="https://github.com/susanthavfx-art/WonderLab_Studio" target="_blank" rel="noopener">Main Studio Portfolio ↗</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="container footer-bottom">
+      <span>© <span id="year">2026</span> WonderLab AR — WonderLab Studio. All rights reserved.</span>
+      <span class="footer-bottom-right">SCAN • OPEN • EXPERIENCE — AI • 3D • ANIMATION • WEBAR</span>
+    </div>
+  </footer>
+
+  <!-- =========================================================
+       ENLARGE IMAGE MARKER MODAL (FOR EASY DESKTOP-TO-PHONE SCAN)
+  ========================================================== -->
+  <div class="marker-modal" id="markerModal" aria-hidden="true">
+    <div class="marker-modal-inner">
+      <button type="button" class="marker-modal-close" id="closeMarkerModal" aria-label="Close modal">✕</button>
+
+      <div class="marker-modal-img-wrap">
+        <img id="modalMarkerImg" src="assets/markers/marker-heart.jpg" alt="Enlarged Scannable AR Marker">
+      </div>
+
+      <div>
+        <span class="sim-marker-badge" id="modalMarkerBadge">MARKER 01 • TUITION</span>
+        <h3 id="modalMarkerTitle" style="font-size: 24px; margin: 12px 0 8px;">Human Heart — A/L Biology</h3>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0 0 18px;">
+          1. Scan the QR code below with your smartphone.<br>
+          2. Allow browser camera access.<br>
+          3. Point your phone camera steadily at the large Image Marker on the left!
+        </p>
+        <div class="qr-svg-wrap" id="modalQrBox" style="width: 150px; height: 150px; margin-bottom: 16px;"></div>
+        <a class="btn btn-gradient" id="modalOpenArLink" href="ar-camera.html?scene=heart" target="_blank" rel="noopener" style="width: 100%;">
+          Open AR Camera Link <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
